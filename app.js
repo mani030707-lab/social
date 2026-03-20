@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://aaaedmndjoqvaueznvyf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhYWVkbW5kam9xdmF1ZXpudnlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MjQ4NzUsImV4cCI6MjA4OTUwMDg3NX0.7DPrnnT72E6BOYStpyGxXChHMG-l-jxv0XP46JUvixo';
+const SUPABASE_URL = 'https://zfzeqojdvnjyahncipik.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmemVxb2pkdm5qeWFobmNpcGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDM1MjcsImV4cCI6MjA4OTU3OTUyN30.EiuNrxh--jJv4pGWeFEkcYrNemB1Kcvi_3u4WCKqYRE';
 // Guard: only initialise if the CDN has loaded and real keys are configured
 const db = (
   typeof window !== 'undefined' &&
