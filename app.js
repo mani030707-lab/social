@@ -14,27 +14,27 @@ async function signUp(email, password, name, handle) {
   if (!db) { showToast('Supabase not configured'); return; }
   const { data, error } = await db.auth.signUp({ email, password });
   if (error) { showToast('Sign up failed: ' + error.message); return; }
-
+ 
   // Create the profile row
   await db.from('profiles').insert({
     id: data.user.id,
     name, handle, avatar: name[0].toUpperCase()
   });
 }
-
+ 
 // Log in
 async function logIn(email, password) {
   if (!db) { showToast('Supabase not configured'); return; }
   const { error } = await db.auth.signInWithPassword({ email, password });
   if (error) showToast('Login failed: ' + error.message);
 }
-
+ 
 // Log out
 async function logOut() {
   if (!db) { showToast('Supabase not configured'); return; }
   await db.auth.signOut();
 }
-
+ 
 // Get current user on page load
 async function loadCurrentUser() {
   if (!db) return; // fall back to hardcoded ownProfile
@@ -78,9 +78,9 @@ const POSTS_DATA = [
     likes: 298, comments: 45, reposts: 72, liked: false, showComments: false, commentList: [], image: null
   },
 ];
-
+ 
 // ─── SUPABASE FUNCTIONS ───────────────────────────────────────────────────────
-
+ 
 // Load all posts (for the "For You" feed)
 async function loadPosts() {
   if (!db) return; // use local POSTS_DATA when not configured
@@ -88,11 +88,11 @@ async function loadPosts() {
     .from('posts')
     .select('*, profiles(name, handle, avatar)')
     .order('created_at', { ascending: false });
-
+ 
   if (error) { showToast('Could not load posts'); return; }
   renderPosts(data); // pass to your existing render function
 }
-
+ 
 // Create a new post
 async function createPost(body) {
   if (!db) return;
@@ -101,7 +101,7 @@ async function createPost(body) {
   if (error) { showToast('Could not post'); return; }
   loadPosts(); // refresh feed
 }
-
+ 
 // Like a post
 async function likePost(postId) {
   if (!db) return;
@@ -110,8 +110,8 @@ async function likePost(postId) {
   // Also increment the counter
   await db.rpc('increment_likes', { post_id: postId });
 }
-
-
+ 
+ 
 const SUGGESTIONS_DATA = [
   { name: "Priya Nair",  handle: "@priyanair",  avatar: "P", grad: "135deg, #f7c948, #fc5c8a", bio: "Rust & systems engineer",  followers: 3820, following: 190, posts: 204, followed: false },
   { name: "Leo Martins", handle: "@leomartins", avatar: "L", grad: "135deg, #5c9cfc, #5cf0c8", bio: "Open source & coffee",      followers: 1102, following: 430, posts: 118, followed: false },
@@ -125,7 +125,7 @@ const FOLLOWING_DATA = [
   { name: "Sam Okafor",  handle: "@samokafor",  avatar: "S", grad: "135deg, #7c5cfc, #5cf0c8", bio: "Accessibility advocate. Dark mode is an a11y issue, not vibes.", followers: 12300, following: 95, posts: 234, followed: true  },
   { name: "Leo Martins", handle: "@leomartins", avatar: "L", grad: "135deg, #5c9cfc, #5cf0c8", bio: "Open source & coffee. Maintainer of 3 npm packages.",           followers: 1102, following: 430, posts: 118, followed: true  },
 ];
-
+ 
 // Unique posts from people Alex follows (not in main feed)
 const FOLLOWING_POSTS = [
   {
@@ -159,7 +159,7 @@ const FOLLOWING_POSTS = [
     likes: 267, comments: 33, reposts: 55, liked: false, showComments: false, commentList: [], image: null
   },
 ];
-
+ 
 const TRENDING_DATA = [
   { cat: "Technology",  tag: "#DesignSystems", count: "12.4K posts" },
   { cat: "Development", tag: "#BuildInPublic",  count: "9.1K posts"  },
@@ -167,7 +167,7 @@ const TRENDING_DATA = [
   { cat: "Design",      tag: "#UXDesign",       count: "5.3K posts"  },
   { cat: "Programming", tag: "#Rust",           count: "4.9K posts"  }
 ];
-
+ 
 const NOTIF_DATA = [
   { id: 1, read: false, type: "like",    avatar: "M", grad: "135deg, #5cf0c8, #5c9cfc", name: "Maya Chen",   time: "2m ago",    text: "liked your post",         preview: '"Just shipped a new design system…"' },
   { id: 2, read: false, type: "follow",  avatar: "J", grad: "135deg, #fc5c8a, #fc9c5c", name: "Jordan Kim",  time: "15m ago",   text: "started following you",   preview: null },
@@ -177,7 +177,7 @@ const NOTIF_DATA = [
   { id: 6, read: true,  type: "mention", avatar: "N", grad: "135deg, #fc9c5c, #fc5c8a", name: "Nia Osei",    time: "Yesterday", text: "mentioned you in a post", preview: '"Shoutout to @alexrivera for the thread 🙌"' }
 ];
 const NOTIF_ICONS = { like: "❤️", follow: "👤", comment: "💬", repost: "🔁", mention: "📣" };
-
+ 
 const MSG_DATA = [
   {
     id: 1, name: "Maya Chen", handle: "@mayachen", avatar: "M",
@@ -207,9 +207,9 @@ const MSG_DATA = [
     ]
   }
 ];
-
+ 
 // ─── PROFILE & STATE ──────────────────────────────────────────────────────────
-
+ 
 let ownProfile = {
   name: "Alex Rivera", handle: "@alexrivera",
   bio: "Designer & developer. Building things that matter. Coffee enthusiast ☕",
@@ -220,7 +220,7 @@ let ownProfile = {
   twitter: "", linkedin: "", github: "",
   isPrivate: false, showOnline: true, allowDMs: true
 };
-
+ 
 // App settings — persisted in memory
 let appSettings = {
   theme: "dark",
@@ -238,12 +238,12 @@ let appSettings = {
   compactMode: false,
   language: "en"
 };
-
+ 
 // Bookmarks: Set of post IDs, plus a map of postId -> collection label
 let bookmarks     = new Set();
 let bookmarkNotes = {};  // postId -> optional note
 let activeBookmarkFilter = "all";
-
+ 
 let posts           = JSON.parse(JSON.stringify(POSTS_DATA));
 let followingPosts  = JSON.parse(JSON.stringify(FOLLOWING_POSTS));
 let nextId       = posts.length + 1;
@@ -252,9 +252,9 @@ let activeTab    = "for-you";   // "for-you" | "following"
 let activeConvId = MSG_DATA[0].id;
 let postMenuOpen = null;    // id of post whose context menu is open
 const _followStates = {};
-
+ 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-
+ 
 document.addEventListener("DOMContentLoaded", () => {
   renderHome();
   renderTrending();
@@ -268,30 +268,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
+ 
 // Supabase bootstrap — runs after the sync init above
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadCurrentUser();
   if (db) {
+    // onAuthStateChange fires reliably for BOTH normal sessions AND
+    // OAuth redirects (PKCE code exchange or implicit hash token).
+    // We rely on it as the single source of truth instead of getSession(),
+    // which can return null on the first tick after an OAuth redirect.
+    db.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        hideAuthScreen();
+        await loadCurrentUser();
+        await loadPosts();
+      }
+      if (event === 'SIGNED_OUT') {
+        showAuthScreen();
+      }
+    });
+ 
+    // getSession() resolves the current persisted session (or null).
+    // After an OAuth redirect Supabase will exchange the code/token
+    // and emit SIGNED_IN via onAuthStateChange above, so we only need
+    // getSession() to handle the "already logged in" case on a fresh load.
     const { data: { session } } = await db.auth.getSession();
-    if (session) {
-      hideAuthScreen();
-      await loadCurrentUser();
-      await loadPosts();
-    } else {
-      // Supabase configured but no active session — show login
+    if (!session) {
+      // No session yet — show login. If an OAuth redirect is in progress
+      // the SIGNED_IN event will fire shortly and call hideAuthScreen().
       showAuthScreen();
     }
-    db.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) { hideAuthScreen(); }
-      if (event === 'SIGNED_OUT')            { showAuthScreen(); }
-    });
   } else {
     // No Supabase configured — show auth screen for demo login
     showAuthScreen();
   }
 });
-
+ 
 function initCharCounters() {
   [{ inp: "ep-name", out: "ep-name-count", max: 50 },
    { inp: "ep-bio",  out: "ep-bio-count",  max: 160 }].forEach(({ inp, out, max }) => {
@@ -300,25 +311,25 @@ function initCharCounters() {
     if (el && ct) el.addEventListener("input", () => { ct.textContent = `${el.value.length}/${max}`; });
   });
 }
-
+ 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
-
+ 
 function setPage(page, navEl) {
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   navEl.classList.add("active");
   activePage = page;
-
+ 
   const titles = { home: "Home", notifications: "Notifications", messages: "Messages", saved: "Saved", settings: "Settings" };
   document.querySelector(".feed-title").textContent = titles[page] || "Home";
   document.querySelector(".tabs").style.display = page === "home" ? "flex" : "none";
-
+ 
   if      (page === "home")          renderHome();
   else if (page === "notifications") renderNotifications();
   else if (page === "messages")      renderMessages();
   else if (page === "saved")         renderBookmarks();
   else if (page === "settings")      renderSettings();
 }
-
+ 
 function switchTab(el, tab) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
@@ -326,24 +337,24 @@ function switchTab(el, tab) {
   if (tab === "following") renderFollowingFeed();
   else renderForYouFeed();
 }
-
+ 
 // ─── FOR YOU FEED ─────────────────────────────────────────────────────────────
-
+ 
 function renderForYouFeed() {
   const c = document.getElementById("posts-container");
   if (!c) return;
   c.innerHTML = "";
   posts.forEach(p => c.insertAdjacentHTML("beforeend", buildPostHTML(p)));
 }
-
+ 
 // ─── FOLLOWING FEED ───────────────────────────────────────────────────────────
-
+ 
 function renderFollowingFeed() {
   // Only show followingPosts — never mix with main posts[] (different DOM ID scheme)
   const followedHandles = new Set(FOLLOWING_DATA.filter(u => u.followed).map(u => u.handle));
   const c = document.getElementById("posts-container");
   if (!c) return;
-
+ 
   if (followedHandles.size === 0) {
     c.innerHTML = `
       <div class="following-empty">
@@ -354,16 +365,16 @@ function renderFollowingFeed() {
       </div>`;
     return;
   }
-
+ 
   // Filter following posts to only those from currently-followed people
   const visible = followingPosts.filter(p => followedHandles.has(p.handle));
-
+ 
   const followedAvatars = FOLLOWING_DATA.filter(u => u.followed).map(u => `
     <div class="following-pill" onclick="openProfileModal(${JSON.stringify(u).replace(/"/g,"&quot;")})">
       <div class="following-pill-av" style="background:linear-gradient(${u.grad})">${u.avatar}</div>
       <span>${u.name.split(" ")[0]}</span>
     </div>`).join("");
-
+ 
   c.innerHTML = `
     <div class="following-who-row">
       <div class="following-who-label">From people you follow</div>
@@ -374,16 +385,16 @@ function renderFollowingFeed() {
       : `<div class="empty-note" style="text-align:center;padding:40px 0;color:var(--text3)">No posts from the people you follow yet.</div>`
     }`;
 }
-
+ 
 function buildFollowingPostHTML(post) {
   const isSaved      = bookmarks.has(post.id);
   const likedIcon    = post.liked ? "❤️" : "🤍";
   const person       = FOLLOWING_DATA.find(u => u.handle === post.handle);
   const commentsOpen = post.showComments ? "open" : "";
-
+ 
   const bodyHTML = post.body.replace(/(#\w+)/g,
     `<span class="hashtag" onclick="handleHashtag('$1')">$1</span>`);
-
+ 
   const commentsHTML = (post.commentList || []).map(c => `
     <div class="comment">
       <div class="comment-avatar" style="background:linear-gradient(${c.grad})">${c.avatar}</div>
@@ -392,7 +403,7 @@ function buildFollowingPostHTML(post) {
         <div class="comment-text">${c.text}</div>
       </div>
     </div>`).join("");
-
+ 
   const userJSON = JSON.stringify({
     name: post.name, handle: post.handle, avatar: post.avatar,
     grad: post.grad, bio: person?.bio || "Hello member",
@@ -400,7 +411,7 @@ function buildFollowingPostHTML(post) {
     following: person?.following || 300,
     posts: person?.posts || 42
   }).replace(/"/g, "&quot;");
-
+ 
   return `
     <div class="post-card" id="fpost-${post.id}">
       <div class="post-header">
@@ -442,7 +453,7 @@ function buildFollowingPostHTML(post) {
       </div>
     </div>`;
 }
-
+ 
 function toggleFollowingLike(id) {
   // Search followingPosts first, fall back to posts (safety net)
   const post = followingPosts.find(p => p.id === id) || posts.find(p => p.id === id);
@@ -455,7 +466,7 @@ function toggleFollowingLike(id) {
   if (statEl) statEl.textContent = `${post.likes} Likes`;
   showToast(post.liked ? "Liked ❤️" : "Like removed");
 }
-
+ 
 function toggleFollowingComments(id) {
   const post = followingPosts.find(p => p.id === id);
   if (!post) return;
@@ -466,7 +477,7 @@ function toggleFollowingComments(id) {
     if (post.showComments) setTimeout(() => document.getElementById(`fcomment-input-${id}`)?.focus(), 80);
   }
 }
-
+ 
 function submitFollowingComment(id) {
   const input = document.getElementById(`fcomment-input-${id}`);
   const text  = input?.value.trim();
@@ -492,11 +503,11 @@ function submitFollowingComment(id) {
   if (statEl) statEl.textContent = `${post.comments} Comments`;
   showToast("Comment posted 💬");
 }
-
+ 
 function handleFollowingCommentKey(e, id) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitFollowingComment(id); }
 }
-
+ 
 function followingRepost(id) {
   const post = followingPosts.find(p => p.id === id) || posts.find(p => p.id === id);
   if (!post) return;
@@ -505,7 +516,7 @@ function followingRepost(id) {
   if (statEl) statEl.textContent = `${post.reposts} Reposts`;
   showToast("Reposted 🔁");
 }
-
+ 
 function unfollowFromFeed(handle, name) {
   const person = FOLLOWING_DATA.find(u => u.handle === handle);
   if (!person) return;
@@ -520,9 +531,9 @@ function unfollowFromFeed(handle, name) {
   showToast(`Unfollowed ${name}`);
   renderFollowingFeed();
 }
-
+ 
 // ─── HOME ─────────────────────────────────────────────────────────────────────
-
+ 
 function renderHome() {
   document.getElementById("page-content").innerHTML = `
     <div class="feed">
@@ -547,22 +558,22 @@ function renderHome() {
   if (activeTab === 'following') renderFollowingFeed();
   else renderForYouFeed();
 }
-
+ 
 // ─── POSTS ────────────────────────────────────────────────────────────────────
-
+ 
 // renderPosts is kept for backward compatibility (e.g. called after loadPosts())
 // and simply delegates to renderForYouFeed.
 function renderPosts() {
   if (activeTab === 'following') renderFollowingFeed();
   else renderForYouFeed();
 }
-
+ 
 function buildPostHTML(post, inBookmarks = false) {
   const likedIcon    = post.liked ? "❤️" : "🤍";
   const commentsOpen = post.showComments ? "open" : "";
   const imageHTML    = post.image ? `<div class="post-image">${post.image}</div>` : "";
   const isSaved      = bookmarks.has(post.id);
-
+ 
   const commentsHTML = post.commentList.map(c => `
     <div class="comment">
       <div class="comment-avatar" style="background:linear-gradient(${c.grad})">${c.avatar}</div>
@@ -571,15 +582,15 @@ function buildPostHTML(post, inBookmarks = false) {
         <div class="comment-text">${c.text}</div>
       </div>
     </div>`).join("");
-
+ 
   const bodyHTML = post.body.replace(/(#\w+)/g,
     `<span class="hashtag" onclick="handleHashtag('$1')">$1</span>`);
-
+ 
   const userJSON = JSON.stringify({
     name: post.name, handle: post.handle, avatar: post.avatar,
     grad: post.grad, bio: "Hello member", followers: 1200, following: 300, posts: 42
   }).replace(/"/g, "&quot;");
-
+ 
   return `
     <div class="post-card" id="post-${post.id}">
       <div class="post-header">
@@ -631,9 +642,9 @@ function buildPostHTML(post, inBookmarks = false) {
       </div>
     </div>`;
 }
-
+ 
 // ─── POST CONTEXT MENU ────────────────────────────────────────────────────────
-
+ 
 function togglePostMenu(e, id) {
   e.stopPropagation();
   const menu = document.getElementById(`post-menu-${id}`);
@@ -645,12 +656,12 @@ function togglePostMenu(e, id) {
   menu.classList.toggle("open");
   postMenuOpen = menu.classList.contains("open") ? id : null;
 }
-
+ 
 function closePostMenus() {
   document.querySelectorAll(".post-menu-popup.open").forEach(m => m.classList.remove("open"));
   postMenuOpen = null;
 }
-
+ 
 function deletePost(id) {
   closePostMenus();
   posts = posts.filter(p => p.id !== id);
@@ -659,9 +670,9 @@ function deletePost(id) {
   if (card) { card.style.opacity = "0"; card.style.transform = "scale(0.95)"; card.style.transition = "all 0.2s"; setTimeout(() => card.remove(), 200); }
   showToast("Post deleted");
 }
-
+ 
 // ─── POST ACTIONS ─────────────────────────────────────────────────────────────
-
+ 
 function toggleLike(id) {
   const post = posts.find(p => p.id === id);
   if (!post) return;
@@ -674,7 +685,7 @@ function toggleLike(id) {
   card.querySelector(".post-stats .stat").textContent = `${post.likes} Likes`;
   if (post.liked) showToast("Liked ❤️");
 }
-
+ 
 function toggleComments(id) {
   const post = posts.find(p => p.id === id);
   if (!post) return;
@@ -682,7 +693,7 @@ function toggleComments(id) {
   document.getElementById(`comments-${id}`).classList.toggle("open", post.showComments);
   if (post.showComments) setTimeout(() => document.getElementById(`comment-input-${id}`)?.focus(), 80);
 }
-
+ 
 function submitComment(id) {
   const input = document.getElementById(`comment-input-${id}`);
   const text  = input?.value.trim();
@@ -706,11 +717,11 @@ function submitComment(id) {
   if (stats[1]) stats[1].textContent = `${post.comments} Comments`;
   showToast("Comment posted 💬");
 }
-
+ 
 function handleCommentKey(e, id) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitComment(id); }
 }
-
+ 
 function repost(id) {
   const post = posts.find(p => p.id === id);
   if (!post) return;
@@ -722,20 +733,20 @@ function repost(id) {
   }
   showToast("Reposted 🔁");
 }
-
+ 
 function sharePost(id) {
   closePostMenus();
   showToast("Link copied 🔗");
 }
-
+ 
 // ─── BOOKMARKS ────────────────────────────────────────────────────────────────
-
+ 
 function toggleBookmark(id) {
   closePostMenus();
   // Search both the main feed and the following feed
   const post = posts.find(p => p.id === id) || followingPosts.find(p => p.id === id);
   if (!post) return;
-
+ 
   if (bookmarks.has(id)) {
     bookmarks.delete(id);
     showToast("Removed from Saved");
@@ -744,7 +755,7 @@ function toggleBookmark(id) {
     showToast("Post saved 🔖");
   }
   const isSaved = bookmarks.has(id);
-
+ 
   // Update main feed save button
   const mainBtn = document.getElementById(`bm-btn-${id}`);
   if (mainBtn) {
@@ -760,29 +771,29 @@ function toggleBookmark(id) {
   // Update ··· menu label
   const menuBtn = document.querySelector(`#post-menu-${id} button:first-child`);
   if (menuBtn) menuBtn.textContent = isSaved ? "🔖 Remove Bookmark" : "🔖 Bookmark";
-
+ 
   if (activePage === "saved") renderBookmarks();
 }
-
+ 
 function renderBookmarks() {
   // Include saved posts from both the main feed and following feed
   const allPosts   = [...posts, ...followingPosts];
   const savedPosts = allPosts.filter(p => bookmarks.has(p.id));
-
+ 
   const filters = [
     { id: "all", label: "All" },
     { id: "liked", label: "Liked by me" },
     { id: "recent", label: "Most Recent" },
   ];
-
+ 
   const filterHTML = filters.map(f => `
     <button class="bm-filter-btn ${activeBookmarkFilter === f.id ? "active" : ""}"
       onclick="setBookmarkFilter('${f.id}')">${f.label}</button>`).join("");
-
+ 
   let filtered = [...savedPosts];
   if (activeBookmarkFilter === "liked")  filtered = filtered.filter(p => p.liked);
   if (activeBookmarkFilter === "recent") filtered = filtered.slice().reverse();
-
+ 
   const postsHTML = filtered.length
     ? filtered.map(p => buildPostHTML(p, true)).join("")
     : `<div class="empty-state-bm">
@@ -790,7 +801,7 @@ function renderBookmarks() {
         <div class="empty-bm-title">${activeBookmarkFilter === "liked" ? "No liked posts saved" : "Nothing saved yet"}</div>
         <div class="empty-bm-sub">Tap the Save button on any post to bookmark it here.</div>
       </div>`;
-
+ 
   document.getElementById("page-content").innerHTML = `
     <div class="feed">
       <div class="bm-header">
@@ -801,27 +812,27 @@ function renderBookmarks() {
       <div id="bm-posts">${postsHTML}</div>
     </div>`;
 }
-
+ 
 function setBookmarkFilter(filter) {
   activeBookmarkFilter = filter;
   renderBookmarks();
 }
-
+ 
 function clearAllBookmarks() {
   if (!confirm("Remove all saved posts?")) return;
   bookmarks.clear();
   renderBookmarks();
   showToast("Cleared all bookmarks");
 }
-
+ 
 // ─── SETTINGS PAGE ────────────────────────────────────────────────────────────
-
+ 
 // Which section is active in the settings sidebar
 let settingsSection = "appearance";
-
+ 
 // Muted words list
 let mutedWords = [];
-
+ 
 // Connected accounts state
 let connectedAccounts = {
   github:  { connected: true,  username: "alexrivera" },
@@ -829,14 +840,14 @@ let connectedAccounts = {
   twitter: { connected: false, username: "" },
   linkedin:{ connected: false, username: "" },
 };
-
+ 
 // 2FA state
 let twoFAEnabled = false;
 let twoFAMethod  = "app"; // "app" | "sms"
-
+ 
 function renderSettings(section) {
   if (section) settingsSection = section;
-
+ 
   const sections = [
     { id: "appearance",    icon: "🎨", label: "Appearance"       },
     { id: "notifications", icon: "🔔", label: "Notifications"    },
@@ -846,16 +857,16 @@ function renderSettings(section) {
     { id: "accessibility", icon: "♿", label: "Accessibility"    },
     { id: "data",          icon: "📦", label: "Data & Storage"   },
   ];
-
+ 
   const navHTML = sections.map(s => `
     <button class="settings-nav-item ${settingsSection === s.id ? "active" : ""}"
       onclick="renderSettings('${s.id}')">
       <span class="settings-nav-icon">${s.icon}</span>
       <span>${s.label}</span>
     </button>`).join("");
-
+ 
   const panelHTML = buildSettingsPanel(settingsSection);
-
+ 
   document.getElementById("page-content").innerHTML = `
     <div class="settings-layout">
       <nav class="settings-sidebar">
@@ -867,7 +878,7 @@ function renderSettings(section) {
       </div>
     </div>`;
 }
-
+ 
 function buildSettingsPanel(section) {
   const toggle = (key, label, desc, extra = "") => `
     <div class="settings-row">
@@ -881,7 +892,7 @@ function buildSettingsPanel(section) {
         <span class="toggle-slider"></span>
       </label>
     </div>`;
-
+ 
   if (section === "appearance") {
     const accentOptions = [
       { color: "#7c5cfc", label: "Violet"  },
@@ -899,7 +910,7 @@ function buildSettingsPanel(section) {
         onclick="setAccentColor('${a.color}')">
         ${appSettings.accentColor === a.color ? "✓" : ""}
       </button>`).join("");
-
+ 
     const themePreview = (id, label, icon, bg, surface, text) => `
       <button class="theme-preview-card ${appSettings.theme === id ? "active" : ""}"
         onclick="setTheme('${id}')" style="--prev-bg:${bg};--prev-surface:${surface};--prev-text:${text}">
@@ -911,23 +922,23 @@ function buildSettingsPanel(section) {
         <div class="theme-preview-label">${icon} ${label}</div>
         ${appSettings.theme === id ? `<div class="theme-preview-check">✓</div>` : ""}
       </button>`;
-
+ 
     return `
       <div class="settings-panel-title">Appearance</div>
-
+ 
       <div class="settings-section-label">Theme</div>
       <div class="theme-preview-row">
         ${themePreview("dark",  "Dark",  "🌙", "#0d0d10", "#16161c", "#f0f0f5")}
         ${themePreview("dim",   "Dim",   "🌗", "#1a1a22", "#22222e", "#e8e8f0")}
         ${themePreview("light", "Light", "☀️", "#f5f5f8", "#ffffff", "#111118")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:24px">Accent Colour</div>
       <div class="accent-grid">${swatches}</div>
       <div class="accent-preview-bar" style="background:linear-gradient(135deg,${appSettings.accentColor},${appSettings.accentColor}99)">
         Preview — buttons, links, active states will use this colour
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:24px">Font Size</div>
       <div class="font-slider-row">
         <span class="font-slider-a small">A</span>
@@ -941,13 +952,13 @@ function buildSettingsPanel(section) {
         </div>
         <span class="font-slider-a large">A</span>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:24px">Layout</div>
       <div class="settings-card-inner">
         ${toggle("compactMode",  "Compact Mode",   "Reduce spacing between posts for a denser feed")}
         ${toggle("reduceMotion", "Reduce Motion",  "Turn off animations and transitions")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:24px">Feed Density Preview</div>
       <div class="density-preview ${appSettings.compactMode ? "compact" : ""}">
         <div class="density-post"><div class="density-avatar"></div><div class="density-lines"><div></div><div></div></div></div>
@@ -955,11 +966,11 @@ function buildSettingsPanel(section) {
         <div class="density-post"><div class="density-avatar"></div><div class="density-lines"><div></div><div></div></div></div>
       </div>`;
   }
-
+ 
   if (section === "notifications") {
     return `
       <div class="settings-panel-title">Notifications</div>
-
+ 
       <div class="settings-section-label">Activity on your posts</div>
       <div class="settings-card-inner">
         ${toggle("notif_likes",    "❤️ Likes",    "When someone likes your post")}
@@ -967,19 +978,19 @@ function buildSettingsPanel(section) {
         ${toggle("notif_reposts",  "🔁 Reposts",  "When someone reposts your content")}
         ${toggle("notif_mentions", "📣 Mentions", "When someone tags you")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Account activity</div>
       <div class="settings-card-inner">
         ${toggle("notif_follows",  "👤 New Followers",   "When someone follows you")}
         ${toggle("notif_dms",      "✉️ Direct Messages", "New message notifications")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Delivery</div>
       <div class="settings-card-inner">
         ${toggle("notif_push",  "📲 Push Notifications", "Browser and mobile alerts")}
         ${toggle("notif_email", "📧 Email Digest",       "Weekly summary of your activity")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Quiet Hours</div>
       <div class="settings-card-inner">
         <div class="settings-row">
@@ -1005,11 +1016,11 @@ function buildSettingsPanel(section) {
         </div>
       </div>`;
   }
-
+ 
   if (section === "account") {
     return `
       <div class="settings-panel-title">Account</div>
-
+ 
       <div class="settings-section-label">Identity</div>
       <div class="settings-card-inner">
         <div class="settings-row">
@@ -1041,12 +1052,12 @@ function buildSettingsPanel(section) {
           <button class="settings-action-btn" onclick="showToast('Phone number setup coming soon')">Add</button>
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Connected Accounts</div>
       <div class="settings-card-inner">
         ${buildConnectedAccounts()}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Sessions</div>
       <div class="settings-card-inner">
         <div class="session-row">
@@ -1074,11 +1085,11 @@ function buildSettingsPanel(section) {
         </div>
       </div>`;
   }
-
+ 
   if (section === "security") {
     return `
       <div class="settings-panel-title">Security</div>
-
+ 
       <div class="settings-section-label">Password</div>
       <div class="settings-card-inner">
         <div class="settings-row">
@@ -1100,7 +1111,7 @@ function buildSettingsPanel(section) {
           </div>
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Two-Factor Authentication</div>
       <div class="settings-card-inner">
         <div class="tfa-status-row">
@@ -1116,7 +1127,7 @@ function buildSettingsPanel(section) {
             ${twoFAEnabled ? "Disable" : "Enable 2FA"}
           </button>
         </div>
-
+ 
         ${twoFAEnabled ? `
         <div class="settings-section-label" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">Method</div>
         <div class="tfa-methods">
@@ -1139,7 +1150,7 @@ function buildSettingsPanel(section) {
           <button class="settings-action-btn" onclick="showBackupCodes()">View Codes</button>
         </div>` : ""}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Login Activity</div>
       <div class="settings-card-inner">
         <div class="login-event">
@@ -1165,11 +1176,11 @@ function buildSettingsPanel(section) {
         </div>
       </div>`;
   }
-
+ 
   if (section === "privacy") {
     return `
       <div class="settings-panel-title">Privacy & Safety</div>
-
+ 
       <div class="settings-section-label">Visibility</div>
       <div class="settings-card-inner">
         ${toggle("isPrivate", "Private Account", "Only approved followers can see your posts",
@@ -1177,7 +1188,7 @@ function buildSettingsPanel(section) {
         ${toggle("hideFollowers", "Hide Follower Count", "Others won't see your follower count")}
         ${toggle("hideOnline",    "Hide Online Status",  "Don't show when you're active")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Interactions</div>
       <div class="settings-card-inner">
         ${toggle("allowComments", "Allow Comments",  "Let others comment on your posts")}
@@ -1185,7 +1196,7 @@ function buildSettingsPanel(section) {
         ${toggle("allowTagging",  "Allow Tagging",   "Let others mention or tag you")}
         ${toggle("allowDMs",      "Message Requests","Accept DMs from non-followers")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Muted Words</div>
       <div class="settings-card-inner">
         <div class="muted-words-input-row">
@@ -1197,7 +1208,7 @@ function buildSettingsPanel(section) {
           ${buildMutedWordsList()}
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Blocked Accounts</div>
       <div class="settings-card-inner">
         <div class="settings-row">
@@ -1208,18 +1219,18 @@ function buildSettingsPanel(section) {
           <button class="settings-action-btn" onclick="showToast('No accounts blocked')">Manage</button>
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Search & Discovery</div>
       <div class="settings-card-inner">
         ${toggle("searchable", "Searchable by Email",   "People can find you using your email")}
         ${toggle("suggestMe",  "Suggest My Account",    "Appear in 'Who to Follow' suggestions")}
       </div>`;
   }
-
+ 
   if (section === "accessibility") {
     return `
       <div class="settings-panel-title">Accessibility & Language</div>
-
+ 
       <div class="settings-section-label">Language & Region</div>
       <div class="settings-card-inner">
         <div class="settings-row">
@@ -1250,7 +1261,7 @@ function buildSettingsPanel(section) {
           </select>
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Reading & Vision</div>
       <div class="settings-card-inner">
         ${toggle("reduceMotion",  "Reduce Motion",     "Minimise animations and transitions")}
@@ -1258,14 +1269,14 @@ function buildSettingsPanel(section) {
         ${toggle("largeTargets",  "Larger Tap Targets","Make buttons and links easier to tap")}
         ${toggle("altText",       "Always Show Alt Text","Display image descriptions automatically")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Feed & Media</div>
       <div class="settings-card-inner">
         ${toggle("autoplay",      "Autoplay Videos",   "Automatically play videos while scrolling")}
         ${toggle("dataSaver",     "Data Saver",        "Load lower-quality images to save data")}
         ${toggle("showSensitive", "Show Sensitive Content", "Un-blur marked sensitive posts")}
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Keyboard Shortcuts</div>
       <div class="settings-card-inner">
         <div class="shortcuts-grid">
@@ -1279,11 +1290,11 @@ function buildSettingsPanel(section) {
         </div>
       </div>`;
   }
-
+ 
   if (section === "data") {
     return `
       <div class="settings-panel-title">Data & Storage</div>
-
+ 
       <div class="settings-section-label">Your Data</div>
       <div class="settings-card-inner">
         <div class="data-stats-grid">
@@ -1312,7 +1323,7 @@ function buildSettingsPanel(section) {
           <button class="settings-action-btn accent-btn" onclick="requestDataExport()">Export</button>
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Storage & Cache</div>
       <div class="settings-card-inner">
         <div class="storage-bar-wrap">
@@ -1338,7 +1349,7 @@ function buildSettingsPanel(section) {
           <button class="settings-action-btn" onclick="clearCache()">Clear</button>
         </div>
       </div>
-
+ 
       <div class="settings-section-label" style="margin-top:20px">Analytics & Tracking</div>
       <div class="settings-card-inner">
         ${toggle("personalizedAds", "Personalised Ads",      "Use your activity to show relevant ads")}
@@ -1346,12 +1357,12 @@ function buildSettingsPanel(section) {
         ${toggle("thirdParty",      "Third-party Cookies",   "Allow cross-site tracking cookies")}
       </div>`;
   }
-
+ 
   return `<div class="settings-panel-title">${section}</div><p style="color:var(--text3)">Coming soon.</p>`;
 }
-
+ 
 // ─── SETTINGS HELPERS ─────────────────────────────────────────────────────────
-
+ 
 function buildConnectedAccounts() {
   const accounts = [
     { id: "github",   icon: "🐙", label: "GitHub",   color: "#5c9cfc" },
@@ -1377,7 +1388,7 @@ function buildConnectedAccounts() {
       </div>`;
   }).join("");
 }
-
+ 
 function buildMutedWordsList() {
   if (!mutedWords.length) return `<div class="muted-empty">No muted words yet</div>`;
   return mutedWords.map((w, i) => `
@@ -1386,7 +1397,7 @@ function buildMutedWordsList() {
       <button onclick="removeMutedWord(${i})">✕</button>
     </div>`).join("");
 }
-
+ 
 function toggleConnectedAccount(id) {
   const acc = connectedAccounts[id];
   acc.connected = !acc.connected;
@@ -1400,13 +1411,13 @@ function toggleConnectedAccount(id) {
   }
   renderSettings("account");
 }
-
+ 
 function toggleDND(val) {
   const row = document.getElementById("quiet-hours");
   if (row) row.style.display = val ? "flex" : "none";
   showToast(val ? "Do Not Disturb on" : "Do Not Disturb off");
 }
-
+ 
 function addMutedWord() {
   const input = document.getElementById("muted-word-input");
   const word  = input?.value.trim();
@@ -1418,7 +1429,7 @@ function addMutedWord() {
   if (list) list.innerHTML = buildMutedWordsList();
   showToast(`"${word}" muted ✓`);
 }
-
+ 
 function removeMutedWord(i) {
   const word = mutedWords[i];
   mutedWords.splice(i, 1);
@@ -1426,37 +1437,37 @@ function removeMutedWord(i) {
   if (list) list.innerHTML = buildMutedWordsList();
   showToast(`"${word}" unmuted`);
 }
-
+ 
 function handleMutedWordKey(e) {
   if (e.key === "Enter") addMutedWord();
 }
-
+ 
 function toggle2FA() {
   twoFAEnabled = !twoFAEnabled;
   showToast(twoFAEnabled ? "Two-factor authentication enabled 🔐" : "Two-factor authentication disabled");
   renderSettings("security");
 }
-
+ 
 function set2FAMethod(method) {
   twoFAMethod = method;
   showToast(`2FA method: ${method === "app" ? "Authenticator App" : "SMS"}`);
   renderSettings("security");
 }
-
+ 
 function showBackupCodes() {
   const codes = ["8f2k-9x1p","3m7n-6qr2","p4k1-9wz8","x2j5-4ts6","9c8b-3vq7","7y2a-1nm5","6r9f-8dx3","5p3k-2wy9"];
   alert("Backup codes (save these somewhere safe):\n\n" + codes.join("\n"));
 }
-
+ 
 function requestDataExport() {
   const email = ownProfile.email || 'your email';
   showToast(`Export request submitted — check ${email} in 24h 📦`);
 }
-
+ 
 function clearCache() {
   showToast("Cache cleared (24 MB freed) ✓");
 }
-
+ 
 async function openChangeEmail() {
   const newEmail = prompt("Enter your new email address:");
   if (!newEmail || !newEmail.includes("@")) return;
@@ -1467,10 +1478,10 @@ async function openChangeEmail() {
   ownProfile.email = newEmail;
   showToast(`Verification sent to ${newEmail} ✉️`);
 }
-
-
+ 
+ 
 // ─── SETTINGS ACTIONS ─────────────────────────────────────────────────────────
-
+ 
 function toggleSetting(key, value) {
   appSettings[key] = value;
   // Some toggles have live effects
@@ -1485,11 +1496,11 @@ function toggleSetting(key, value) {
   }
   showToast(value ? "Enabled ✓" : "Disabled");
 }
-
+ 
 function setSetting(key, value) {
   appSettings[key] = value;
 }
-
+ 
 function setTheme(theme) {
   appSettings.theme = theme;
   const root = document.documentElement;
@@ -1524,14 +1535,14 @@ function setTheme(theme) {
   renderSettings("appearance");
   showToast(`${theme.charAt(0).toUpperCase()+theme.slice(1)} theme ✓`);
 }
-
+ 
 function setAccentColor(color) {
   appSettings.accentColor = color;
   document.documentElement.style.setProperty("--accent", color);
   renderSettings("appearance");
   showToast("Accent colour updated ✓");
 }
-
+ 
 function setFontSize(size) {
   appSettings.fontSize = size;
   const sizes = { small: "13px", medium: "15px", large: "17px" };
@@ -1539,25 +1550,25 @@ function setFontSize(size) {
   renderSettings("appearance");
   showToast(`Font: ${size}`);
 }
-
+ 
 function setFontSizeFromSlider(val) {
   const sizes = ["small", "medium", "large"];
   setFontSize(sizes[parseInt(val)] || "medium");
 }
-
+ 
 function showShortcutsModal() {
   renderSettings("accessibility");
 }
-
-
+ 
+ 
 function handleHashtag(tag) { showToast(`Exploring ${tag} 🔍`); }
-
+ 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-
+ 
 function renderNotifications() {
   const unread = NOTIF_DATA.filter(n => !n.read);
   const read   = NOTIF_DATA.filter(n =>  n.read);
-
+ 
   const buildRow = n => `
     <div class="notif-row ${n.read ? "" : "notif-unread"}" onclick="markNotifRead(${n.id})">
       <div class="notif-avatar-wrap">
@@ -1571,7 +1582,7 @@ function renderNotifications() {
       </div>
       ${n.read ? "" : `<span class="notif-dot"></span>`}
     </div>`;
-
+ 
   document.getElementById("page-content").innerHTML = `
     <div class="feed">
       <div class="notif-header">
@@ -1585,7 +1596,7 @@ function renderNotifications() {
       <div>${read.map(buildRow).join("")}</div>
     </div>`;
 }
-
+ 
 function markNotifRead(id) {
   const n = NOTIF_DATA.find(x => x.id === id);
   if (!n || n.read) return;
@@ -1593,14 +1604,14 @@ function markNotifRead(id) {
   renderNotifications();
   syncNotifBadge();
 }
-
+ 
 function markAllRead() {
   NOTIF_DATA.forEach(n => n.read = true);
   renderNotifications();
   syncNotifBadge();
   showToast("All caught up ✓");
 }
-
+ 
 function syncNotifBadge() {
   const count = NOTIF_DATA.filter(n => !n.read).length;
   const badge = document.querySelector('[data-page="notifications"] .badge');
@@ -1608,9 +1619,9 @@ function syncNotifBadge() {
   badge.textContent   = count;
   badge.style.display = count ? "inline" : "none";
 }
-
+ 
 // ─── MESSAGES ─────────────────────────────────────────────────────────────────
-
+ 
 function syncMsgBadge() {
   const totalUnread = MSG_DATA.reduce((sum, c) => sum + (c.unread || 0), 0);
   const badge = document.querySelector('[data-page="messages"] .badge');
@@ -1632,13 +1643,13 @@ function syncMsgBadge() {
     if (badge) badge.style.display = "none";
   }
 }
-
+ 
 function renderMessages(convId) {
   if (convId !== undefined) activeConvId = convId;
   const conv = MSG_DATA.find(c => c.id === activeConvId) || MSG_DATA[0];
   activeConvId = conv.id;
   conv.unread  = 0;   // mark this conversation as read
-
+ 
   const convListHTML = MSG_DATA.map(c => `
     <div class="conv-item ${c.id === activeConvId ? "conv-active" : ""}" onclick="renderMessages(${c.id})">
       <div class="conv-avatar-wrap">
@@ -1654,7 +1665,7 @@ function renderMessages(convId) {
       </div>
       ${c.unread ? `<span class="conv-badge">${c.unread}</span>` : ""}
     </div>`).join("");
-
+ 
   const threadHTML = conv.thread.map(m => `
     <div class="bubble-row ${m.from === "me" ? "bubble-row-me" : "bubble-row-them"}">
       ${m.from === "them" ? `<div class="bubble-avatar" style="background:linear-gradient(${conv.grad})">${conv.avatar}</div>` : ""}
@@ -1663,7 +1674,7 @@ function renderMessages(convId) {
         <span class="bubble-time">${m.time}</span>
       </div>
     </div>`).join("");
-
+ 
   document.getElementById("page-content").innerHTML = `
     <div class="messages-wrap">
       <div class="conv-list">${convListHTML}</div>
@@ -1683,27 +1694,27 @@ function renderMessages(convId) {
         </div>
       </div>
     </div>`;
-
+ 
   // Update sidebar badge to reflect read state
   syncMsgBadge();
-
+ 
   requestAnimationFrame(() => {
     const t = document.getElementById("chat-thread");
     if (t) t.scrollTop = t.scrollHeight;
   });
 }
-
+ 
 function sendMessage() {
   const input = document.getElementById("msg-input");
   const text  = input?.value.trim();
   if (!text) return;
   const conv = MSG_DATA.find(c => c.id === activeConvId);
   if (!conv) return;
-
+ 
   const msg = { from: "me", text, time: "Just now" };
   conv.thread.push(msg);
   input.value = "";
-
+ 
   // Append bubble directly — no full re-render (avoids focus loss & scroll jump)
   const thread = document.getElementById("chat-thread");
   if (thread) {
@@ -1715,7 +1726,7 @@ function sendMessage() {
   } else {
     renderMessages();
   }
-
+ 
   // Update conv list preview without full re-render
   const convItems = document.querySelectorAll(".conv-item");
   convItems.forEach(item => {
@@ -1726,16 +1737,16 @@ function sendMessage() {
       if (time)    time.textContent    = "Just now";
     }
   });
-
+ 
   input.focus();
 }
-
+ 
 function handleMsgKey(e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
-
+ 
 // ─── SIDEBAR WIDGETS ──────────────────────────────────────────────────────────
-
+ 
 function renderTrending() {
   document.getElementById("trending-list").innerHTML = TRENDING_DATA.map(t => `
     <div class="trend-item" onclick="handleHashtag('${t.tag}')">
@@ -1744,7 +1755,7 @@ function renderTrending() {
       <div class="trend-count">${t.count}</div>
     </div>`).join("");
 }
-
+ 
 function renderSuggestions() {
   document.getElementById("suggestions-list").innerHTML = SUGGESTIONS_DATA.map((u, i) => `
     <div class="suggestion" onclick="openProfileModal(${JSON.stringify(u).replace(/"/g,"&quot;")})">
@@ -1759,14 +1770,14 @@ function renderSuggestions() {
       </button>
     </div>`).join("");
 }
-
+ 
 function toggleSugFollow(i, btn) {
   SUGGESTIONS_DATA[i].followed = !SUGGESTIONS_DATA[i].followed;
   const f   = SUGGESTIONS_DATA[i].followed;
   const sug = SUGGESTIONS_DATA[i];
   btn.classList.toggle("following", f);
   btn.textContent = f ? "Following" : "Follow";
-
+ 
   // Sync into FOLLOWING_DATA so the Following tab reflects the change
   const existing = FOLLOWING_DATA.find(u => u.handle === sug.handle);
   if (f && !existing) {
@@ -1778,12 +1789,12 @@ function toggleSugFollow(i, btn) {
   } else if (existing) {
     existing.followed = f;
   }
-
+ 
   showToast(f ? `Following ${sug.name} ✓` : `Unfollowed ${sug.name}`);
 }
-
+ 
 // ─── SEARCH ───────────────────────────────────────────────────────────────────
-
+ 
 function handleSearch(q) {
   if (activePage !== "home") return;
   q = q.trim().toLowerCase();
@@ -1803,9 +1814,9 @@ function handleSearch(q) {
     ? found.map(p => buildPostHTML(p)).join("")
     : `<div class="empty-note">No posts for "<strong>${q}</strong>"</div>`;
 }
-
+ 
 // ─── SUBMIT POST ──────────────────────────────────────────────────────────────
-
+ 
 function submitPost() {
   const input = document.getElementById("postInput");
   const text  = input?.value.trim();
@@ -1821,16 +1832,16 @@ function submitPost() {
   document.getElementById("posts-container")?.insertAdjacentHTML("afterbegin", buildPostHTML(np));
   showToast("Posted ✦");
 }
-
+ 
 // ─── PROFILE MODAL ────────────────────────────────────────────────────────────
-
+ 
 let _modalIsOwnProfile = false;
-
+ 
 function openProfileModal(user) {
   const isOwn = user.handle === ownProfile.handle;
   _modalIsOwnProfile = isOwn;
   const u = isOwn ? ownProfile : user;
-
+ 
   document.getElementById("modalAvatar").textContent = u.avatar;
   document.getElementById("modalAvatar").style.background = `linear-gradient(${u.grad})`;
   document.getElementById("modalCover").style.background   = `linear-gradient(${u.grad})`;
@@ -1840,7 +1851,7 @@ function openProfileModal(user) {
   document.getElementById("modalPosts").textContent     = u.posts ?? "—";
   document.getElementById("modalFollowers").textContent = formatNum(u.followers);
   document.getElementById("modalFollowing").textContent = formatNum(u.following);
-
+ 
   const metaRow = document.getElementById("modalMetaRow");
   if (isOwn) {
     const bits = [];
@@ -1851,7 +1862,7 @@ function openProfileModal(user) {
   } else {
     metaRow.innerHTML = "";
   }
-
+ 
   const actions = document.getElementById("modalActions");
   if (isOwn) {
     actions.innerHTML = `<button class="modal-follow-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" onclick="openEditProfile()">✏️ Edit Profile</button>`;
@@ -1863,17 +1874,17 @@ function openProfileModal(user) {
       </button>
       <button class="modal-msg-btn" onclick="goToMessages('${user.name}')">✉️ Message</button>`;
   }
-
+ 
   document.getElementById("modalOptions").innerHTML = isOwn ? `
     <button class="profile-option-btn" onclick="openChangePassword()"><span class="opt-icon">🔒</span> Change Password</button>
     <button class="profile-option-btn" onclick="openPrivacySettings()"><span class="opt-icon">🛡️</span> Privacy & Safety</button>
     <button class="profile-option-btn" onclick="goToSettings()"><span class="opt-icon">⚙️</span> Settings</button>
     <button class="profile-option-btn" onclick="goToBookmarks()"><span class="opt-icon">🔖</span> Saved Posts</button>
     <button class="profile-option-btn danger" onclick="logOut().then(()=>{ showToast('Signed out'); location.reload(); })"><span class="opt-icon">🚪</span> Log Out</button>` : "";
-
+ 
   document.getElementById("profileModal").classList.add("open");
 }
-
+ 
 function goToMessages(name) {
   document.getElementById("profileModal").classList.remove("open");
   // Try to open the conversation with this person if it exists
@@ -1883,29 +1894,29 @@ function goToMessages(name) {
   if (navEl) setPage("messages", navEl);
   showToast(`Opening chat with ${name} ✉️`);
 }
-
+ 
 function goToSettings() {
   document.getElementById("profileModal").classList.remove("open");
   const navEl = document.querySelector('[data-page="settings"]');
   if (navEl) setPage("settings", navEl);
 }
-
+ 
 function goToBookmarks() {
   document.getElementById("profileModal").classList.remove("open");
   const navEl = document.querySelector('[data-page="saved"]');
   if (navEl) setPage("saved", navEl);
 }
-
+ 
 function closeModal(e) {
   if (e.target === document.getElementById("profileModal"))
     document.getElementById("profileModal").classList.remove("open");
 }
-
+ 
 function toggleModalFollow(btn, handle) {
   const was = btn.textContent.includes("Following");
   _followStates[handle] = !was;
   btn.textContent = was ? "Follow" : "Following ✓";
-
+ 
   // Sync with FOLLOWING_DATA
   const existing = FOLLOWING_DATA.find(u => u.handle === handle);
   if (!was && existing) {
@@ -1918,12 +1929,12 @@ function toggleModalFollow(btn, handle) {
   // Sync with SUGGESTIONS_DATA
   const sug = SUGGESTIONS_DATA.find(u => u.handle === handle);
   if (sug) sug.followed = !was;
-
+ 
   showToast(was ? "Unfollowed" : "Following ✓");
 }
-
+ 
 // ─── EDIT PROFILE ─────────────────────────────────────────────────────────────
-
+ 
 function openEditProfile() {
   document.getElementById("profileModal").classList.remove("open");
   const f = id => document.getElementById(id);
@@ -1946,12 +1957,12 @@ function openEditProfile() {
   f("editAvatarPreview").textContent     = ownProfile.avatar;
   f("editProfileModal").classList.add("open");
 }
-
+ 
 function closeEditModal(e) {
   if (e.target === document.getElementById("editProfileModal"))
     document.getElementById("editProfileModal").classList.remove("open");
 }
-
+ 
 async function saveProfile() {
   const f   = id => document.getElementById(id);
   const raw = f("ep-handle").value.trim();
@@ -2001,9 +2012,9 @@ async function saveProfile() {
   }
   showToast("Profile saved ✓");
 }
-
+ 
 // ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
-
+ 
 function openChangePassword() {
   ["profileModal","settingsPage"].forEach(id => document.getElementById(id)?.classList.remove("open"));
   ["pw-current","pw-new","pw-confirm"].forEach(id => {
@@ -2016,12 +2027,12 @@ function openChangePassword() {
     .forEach(id => document.getElementById(id)?.classList.remove("pass"));
   document.getElementById("changePasswordModal").classList.add("open");
 }
-
+ 
 function closePasswordModal(e) {
   if (e.target === document.getElementById("changePasswordModal"))
     document.getElementById("changePasswordModal").classList.remove("open");
 }
-
+ 
 async function savePassword() {
   const current = document.getElementById("pw-current").value;
   const newPw   = document.getElementById("pw-new").value;
@@ -2042,14 +2053,14 @@ async function savePassword() {
   document.getElementById("changePasswordModal").classList.remove("open");
   showToast("Password updated 🔒");
 }
-
+ 
 function togglePwVisibility(inputId, btn) {
   const el = document.getElementById(inputId);
   if (!el) return;
   el.type = el.type === "password" ? "text" : "password";
   btn.textContent = el.type === "password" ? "👁️" : "🙈";
 }
-
+ 
 function checkPwStrength(val) {
   const rules = {
     "rule-len":     val.length >= 8,
@@ -2075,28 +2086,28 @@ function checkPwStrength(val) {
   fill.style.background = ["#fc5c5c","#fc9c5c","#f7c948","#5cf0c8"][score-1] || "#fc5c5c";
   label.textContent     = score ? ["Weak","Fair","Good","Strong"][score-1] : "";
 }
-
+ 
 // ─── PRIVACY ──────────────────────────────────────────────────────────────────
-
+ 
 function openPrivacySettings() {
   document.getElementById("profileModal").classList.remove("open");
   document.getElementById("priv-private").checked = ownProfile.isPrivate || false;
   document.getElementById("privacyModal").classList.add("open");
 }
-
+ 
 function closePrivacyModal(e) {
   if (e.target === document.getElementById("privacyModal"))
     document.getElementById("privacyModal").classList.remove("open");
 }
-
+ 
 function savePrivacy() {
   ownProfile.isPrivate = document.getElementById("priv-private").checked;
   document.getElementById("privacyModal").classList.remove("open");
   showToast("Privacy settings saved 🛡️");
 }
-
+ 
 // ─── TOAST & UTILS ────────────────────────────────────────────────────────────
-
+ 
 let _toastTimer;
 function showToast(msg) {
   const toast = document.getElementById("toast");
@@ -2105,12 +2116,12 @@ function showToast(msg) {
   toast.classList.add("show");
   _toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
 }
-
+ 
 function formatNum(n) {
   if (n == null) return "—";
   return n >= 1000 ? (n / 1000).toFixed(1) + "K" : String(n);
 }
-
+ 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
     ["profileModal","editProfileModal","changePasswordModal","privacyModal"]
@@ -2123,7 +2134,7 @@ document.addEventListener("keydown", e => {
     if (navEl) { setPage("home", navEl); setTimeout(() => document.getElementById("postInput")?.focus(), 100); }
   }
 });
-
+ 
 // Real-time post subscription
 if (db) {
   db.channel('public:posts')
@@ -2133,7 +2144,7 @@ if (db) {
     .subscribe();
 }
 // ─── AUTH SCREEN LOGIC ────────────────────────────────────────────────────────
-
+ 
 function switchAuthTab(tab) {
   ['login','signup','success'].forEach(t => {
     const form = document.getElementById(t+'Form');
@@ -2146,14 +2157,14 @@ function switchAuthTab(tab) {
   // Clear all error states on tab switch
   document.querySelectorAll('.auth-input').forEach(el => el.classList.remove('error'));
 }
-
+ 
 function toggleAuthPw(id, btn) {
   const el = document.getElementById(id);
   if (!el) return;
   el.type = el.type === 'password' ? 'text' : 'password';
   btn.textContent = el.type === 'password' ? '👁️' : '🙈';
 }
-
+ 
 function checkSignupStrength(val) {
   const score = [val.length >= 8, /[A-Z]/.test(val), /[0-9]/.test(val), /[^A-Za-z0-9]/.test(val)].filter(Boolean).length;
   const fill  = document.getElementById('signup-strength-fill');
@@ -2165,43 +2176,43 @@ function checkSignupStrength(val) {
   fill.style.background = score > 0 ? (colors[score - 1] || '#fc5c5c') : 'var(--border)';
   label.textContent     = score > 0 ? (labels[score - 1] || '') : '';
 }
-
+ 
 function setAuthLoading(btnId, loaderId, on) {
   const btn    = document.getElementById(btnId);
   const loader = document.getElementById(loaderId);
   if (btn)    { btn.classList.toggle('loading', on); btn.disabled = on; }
   if (loader) { loader.style.display = on ? 'block' : 'none'; }
 }
-
+ 
 function markError(id) {
   const el = document.getElementById(id);
   if (el) { el.classList.add('error'); el.focus(); }
 }
-
+ 
 async function handleLogin() {
   const emailEl    = document.getElementById('login-email');
   const passwordEl = document.getElementById('login-password');
   const email      = emailEl?.value.trim() || '';
   const password   = passwordEl?.value || '';
-
+ 
   // Clear previous error states
   emailEl?.classList.remove('error');
   passwordEl?.classList.remove('error');
-
+ 
   if (!email)    { markError('login-email');    showToast('Please enter your email ⚠️'); return; }
   if (!password) { markError('login-password'); showToast('Please enter your password ⚠️'); return; }
-
+ 
   if (!db) {
     // No Supabase — demo mode: just hide auth screen
     showToast('Signed in (demo mode) ✓');
     hideAuthScreen();
     return;
   }
-
+ 
   setAuthLoading('loginBtn', 'loginLoader', true);
   const { error } = await db.auth.signInWithPassword({ email, password });
   setAuthLoading('loginBtn', 'loginLoader', false);
-
+ 
   if (error) {
     showToast('Login failed: ' + error.message + ' ⚠️');
     markError('login-email');
@@ -2212,48 +2223,48 @@ async function handleLogin() {
   hideAuthScreen();
   await loadCurrentUser();
 }
-
+ 
 async function handleSignup() {
   const name     = document.getElementById('signup-name').value.trim();
   const handle   = document.getElementById('signup-handle').value.trim().replace(/^@/, '');
   const email    = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
   const terms    = document.getElementById('signup-terms').checked;
-
+ 
   if (!name)     { markError('signup-name');     showToast('Please enter your name ⚠️'); return; }
   if (!handle)   { markError('signup-handle');   showToast('Please enter a username ⚠️'); return; }
   if (!email)    { markError('signup-email');     showToast('Please enter your email ⚠️'); return; }
   if (password.length < 8) { markError('signup-password'); showToast('Password must be at least 8 characters ⚠️'); return; }
   if (!terms)    { showToast('Please accept the Terms of Service ⚠️'); return; }
-
+ 
   ['signup-name','signup-handle','signup-email','signup-password'].forEach(id =>
     document.getElementById(id)?.classList.remove('error'));
-
+ 
   if (!db) {
     showToast('Account created (demo mode) ✓');
     switchAuthTab('success');
     return;
   }
-
+ 
   setAuthLoading('signupBtn', 'signupLoader', true);
   const { data, error } = await db.auth.signUp({
     email, password,
     options: { data: { name, handle, avatar: name[0].toUpperCase() } }
   });
   setAuthLoading('signupBtn', 'signupLoader', false);
-
+ 
   if (error) { showToast('Sign up failed: ' + error.message + ' ⚠️'); return; }
-
+ 
   // Insert profile row manually as fallback (trigger may handle it too)
   if (data?.user) {
     await db.from('profiles').upsert({
       id: data.user.id, name, handle: '@' + handle, avatar: name[0].toUpperCase()
     });
   }
-
+ 
   switchAuthTab('success');
 }
-
+ 
 async function handleForgotPassword() {
   const email = document.getElementById('login-email').value.trim();
   if (!email) { markError('login-email'); showToast('Enter your email first ⚠️'); return; }
@@ -2262,7 +2273,7 @@ async function handleForgotPassword() {
   if (error) { showToast('Error: ' + error.message); return; }
   showToast('Password reset email sent ✉️');
 }
-
+ 
 function hideAuthScreen() {
   const el = document.getElementById('authScreen');
   if (el) {
@@ -2272,7 +2283,7 @@ function hideAuthScreen() {
     setTimeout(() => el.classList.add('hidden'), 400);
   }
 }
-
+ 
 function showAuthScreen() {
   const el = document.getElementById('authScreen');
   if (el) {
@@ -2284,7 +2295,7 @@ function showAuthScreen() {
     switchAuthTab('login');
   }
 }
-
+ 
 // ─── SIGN-OUT (update existing logOut) ───────────────────────────────────────
 async function logOut() {
   if (db) await db.auth.signOut();
@@ -2292,16 +2303,18 @@ async function logOut() {
   switchAuthTab('login');
   showToast('Signed out successfully');
 }
-
+ 
 async function handleGoogleLogin() {
   if (!db) { showToast('Supabase not configured'); return; }
-
+ 
   const { error } = await db.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.href  // sends back to your current page
+      // Redirect back to the app's origin (no hash/query params).
+      // Supabase will append the auth code automatically.
+      redirectTo: window.location.origin + window.location.pathname
     }
   });
-
+ 
   if (error) showToast('Google sign-in failed: ' + error.message);
 }
