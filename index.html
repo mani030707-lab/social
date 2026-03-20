@@ -6,15 +6,16 @@
   <title>Codealpha media</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
+ 
 <div class="app">
-
+ 
   <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar">
     <div class="logo">Hello</div>
-
+ 
     <nav>
       <div class="nav-section">
         <div class="nav-label">Menu</div>
@@ -42,7 +43,7 @@
         </div>
       </div>
     </nav>
-
+ 
     <div class="sidebar-profile" onclick="openProfileModal({name:'Alex Rivera',handle:'@alexrivera',bio:'Designer & developer. Building things that matter. Coffee enthusiast ☕',avatar:'A',grad:'135deg, #7c5cfc, #fc5c8a',followers:1248,following:312,posts:87})">
       <div class="sp-avatar">A</div>
       <div>
@@ -51,7 +52,7 @@
       </div>
     </div>
   </aside>
-
+ 
   <!-- ===== MAIN FEED ===== -->
   <main class="main">
     <div class="feed-header">
@@ -61,31 +62,31 @@
         <button class="tab" onclick="switchTab(this,'following')">Following</button>
       </div>
     </div>
-
+ 
     <div id="page-content"></div>
   </main>
-
+ 
   <!-- ===== RIGHT PANEL ===== -->
   <aside class="right-panel">
-
+ 
     <div class="search-box">
       <span class="search-icon">🔍</span>
       <input class="search-input" placeholder="Search Hello..." oninput="handleSearch(this.value)">
     </div>
-
+ 
     <div class="panel-section">
       <div class="panel-title">Trending</div>
       <div id="trending-list"></div>
     </div>
-
+ 
     <div class="panel-section">
       <div class="panel-title">Who to Follow</div>
       <div id="suggestions-list"></div>
     </div>
-
+ 
   </aside>
 </div>
-
+ 
 <!-- ===== PROFILE MODAL ===== -->
 <div class="modal-overlay" id="profileModal" onclick="closeModal(event)">
   <div class="modal" id="modalContent">
@@ -110,7 +111,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ===== EDIT PROFILE MODAL ===== -->
 <div class="modal-overlay" id="editProfileModal" onclick="closeEditModal(event)">
   <div class="modal edit-modal">
@@ -119,7 +120,7 @@
       <div class="edit-modal-title">Edit Profile</div>
       <button class="edit-save-btn" onclick="saveProfile()">Save</button>
     </div>
-
+ 
     <!-- Cover photo -->
     <div class="edit-cover-wrap">
       <div class="edit-cover" id="editCoverPreview">
@@ -132,11 +133,11 @@
         <button class="edit-avatar-btn" onclick="showToast('Avatar upload coming soon! 🖼️')">📷</button>
       </div>
     </div>
-
+ 
     <div class="edit-form">
       <!-- Basic Info -->
       <div class="edit-section-title">Basic Info</div>
-
+ 
       <div class="edit-field-row">
         <div class="edit-field">
           <label class="edit-label">Display Name</label>
@@ -151,16 +152,16 @@
           </div>
         </div>
       </div>
-
+ 
       <div class="edit-field">
         <label class="edit-label">Bio</label>
         <textarea class="edit-input edit-textarea" id="ep-bio" placeholder="Tell people about yourself..." maxlength="160" rows="3"></textarea>
         <span class="edit-char-count" id="ep-bio-count">0/160</span>
       </div>
-
+ 
       <!-- Personal Details -->
       <div class="edit-section-title" style="margin-top:24px">Personal Details</div>
-
+ 
       <div class="edit-field-row">
         <div class="edit-field">
           <label class="edit-label">📍 Location</label>
@@ -171,7 +172,7 @@
           <input class="edit-input" id="ep-website" type="url" placeholder="https://yoursite.com">
         </div>
       </div>
-
+ 
       <div class="edit-field-row">
         <div class="edit-field">
           <label class="edit-label">🎂 Date of Birth</label>
@@ -182,7 +183,7 @@
           <input class="edit-input" id="ep-occupation" type="text" placeholder="Your job or role" maxlength="60">
         </div>
       </div>
-
+ 
       <!-- Social Links -->
       <div class="edit-section-title" style="margin-top:24px">Social Links</div>
       <div class="edit-field">
@@ -203,7 +204,7 @@
           <input class="edit-input has-prefix" id="ep-github" type="text" placeholder="yourusername">
         </div>
       </div>
-
+ 
       <!-- Preferences -->
       <div class="edit-section-title" style="margin-top:24px">Preferences</div>
       <div class="edit-toggle-row">
@@ -239,7 +240,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ===== CHANGE PASSWORD MODAL ===== -->
 <div class="modal-overlay" id="changePasswordModal" onclick="closePasswordModal(event)">
   <div class="modal small-modal">
@@ -281,7 +282,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ===== PRIVACY SETTINGS MODAL ===== -->
 <div class="modal-overlay" id="privacyModal" onclick="closePrivacyModal(event)">
   <div class="modal small-modal">
@@ -304,7 +305,7 @@
         <div><div class="edit-toggle-label">Searchable by Email</div><div class="edit-toggle-desc">People can find you using your email</div></div>
         <label class="toggle-switch"><input type="checkbox" id="priv-email-search" checked><span class="toggle-slider"></span></label>
       </div>
-
+ 
       <div class="edit-section-title" style="margin-top:20px">Interactions</div>
       <div class="edit-toggle-row">
         <div><div class="edit-toggle-label">Allow Comments</div><div class="edit-toggle-desc">Let others comment on your posts</div></div>
@@ -318,7 +319,7 @@
         <div><div class="edit-toggle-label">Allow Tagging</div><div class="edit-toggle-desc">Let others tag you in posts</div></div>
         <label class="toggle-switch"><input type="checkbox" id="priv-tagging" checked><span class="toggle-slider"></span></label>
       </div>
-
+ 
       <div class="edit-section-title" style="margin-top:20px">Data</div>
       <div class="edit-toggle-row">
         <div><div class="edit-toggle-label">Personalised Ads</div><div class="edit-toggle-desc">Use your activity to show relevant ads</div></div>
@@ -331,19 +332,19 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
-
+ 
 <!-- ===== AUTH SCREEN ===== -->
-<div class="auth-screen" id="authScreen">
+<div class="auth-screen hidden" id="authScreen">
   <div class="auth-bg">
     <div class="auth-orb auth-orb-1"></div>
     <div class="auth-orb auth-orb-2"></div>
     <div class="auth-orb auth-orb-3"></div>
     <div class="auth-grid"></div>
   </div>
-
+ 
   <div class="auth-container">
     <!-- Left branding panel -->
     <div class="auth-brand">
@@ -355,7 +356,7 @@
         <div class="auth-feature"><span class="auth-feature-dot"></span>Share your thoughts with the world</div>
       </div>
     </div>
-
+ 
     <!-- Right form panel -->
     <div class="auth-card">
       <!-- Tab switcher -->
@@ -363,7 +364,7 @@
         <button class="auth-tab active" id="loginTabBtn" onclick="switchAuthTab('login')">Sign In</button>
         <button class="auth-tab" id="signupTabBtn" onclick="switchAuthTab('signup')">Create Account</button>
       </div>
-
+ 
       <!-- LOGIN FORM -->
       <div class="auth-form" id="loginForm">
         <div class="auth-form-header">
@@ -400,7 +401,7 @@
         </button>
         <p class="auth-switch-text">Don't have an account? <button class="auth-link" onclick="switchAuthTab('signup')">Sign up free</button></p>
       </div>
-
+ 
       <!-- SIGNUP FORM -->
       <div class="auth-form hidden" id="signupForm">
         <div class="auth-form-header">
@@ -456,7 +457,7 @@
         <p class="auth-switch-text">Already have an account? <button class="auth-link" onclick="switchAuthTab('login')">Sign in</button></p>
         <button class="auth-social-btn" onclick="handleGoogleLogin()">Sign in with Google</button>
       </div>
-
+ 
       <!-- SUCCESS state -->
       <div class="auth-form hidden" id="successForm">
         <div class="auth-success">
@@ -466,12 +467,14 @@
           <button class="auth-btn" onclick="switchAuthTab('login')" style="margin-top:24px">Back to Sign In</button>
         </div>
       </div>
-
+ 
     </div>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ 
 <script src="app.js"></script>
 </body>
 </html>
+
+
+

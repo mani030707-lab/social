@@ -29,11 +29,7 @@ async function logIn(email, password) {
   if (error) showToast('Login failed: ' + error.message);
 }
  
-// Log out
-async function logOut() {
-  if (!db) { showToast('Supabase not configured'); return; }
-  await db.auth.signOut();
-}
+// Log out — handled by the full implementation below
  
 // Get current user on page load
 async function loadCurrentUser() {
@@ -271,36 +267,27 @@ document.addEventListener("DOMContentLoaded", () => {
  
 // Supabase bootstrap — runs after the sync init above
 document.addEventListener("DOMContentLoaded", async () => {
-  if (db) {
-    // onAuthStateChange fires reliably for BOTH normal sessions AND
-    // OAuth redirects (PKCE code exchange or implicit hash token).
-    // We rely on it as the single source of truth instead of getSession(),
-    // which can return null on the first tick after an OAuth redirect.
-    db.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        hideAuthScreen();
-        await loadCurrentUser();
-        await loadPosts();
-      }
-      if (event === 'SIGNED_OUT') {
-        showAuthScreen();
-      }
-    });
+  if (!db) {
+    // No Supabase — demo mode, just show login
+    showAuthScreen();
+    return;
+  }
  
-    // getSession() resolves the current persisted session (or null).
-    // After an OAuth redirect Supabase will exchange the code/token
-    // and emit SIGNED_IN via onAuthStateChange above, so we only need
-    // getSession() to handle the "already logged in" case on a fresh load.
-    const { data: { session } } = await db.auth.getSession();
-    if (!session) {
-      // No session yet — show login. If an OAuth redirect is in progress
-      // the SIGNED_IN event will fire shortly and call hideAuthScreen().
+  // onAuthStateChange handles EVERY case:
+  //  - Normal page load with existing session  → INITIAL_SESSION event
+  //  - Google OAuth redirect back to the page  → SIGNED_IN event
+  //  - User signs out                          → SIGNED_OUT event
+  db.auth.onAuthStateChange(async (event, session) => {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+      hideAuthScreen();
+      await loadCurrentUser();
+      await loadPosts();
+    } else if (event === 'INITIAL_SESSION' && !session) {
+      showAuthScreen();
+    } else if (event === 'SIGNED_OUT') {
       showAuthScreen();
     }
-  } else {
-    // No Supabase configured — show auth screen for demo login
-    showAuthScreen();
-  }
+  });
 });
  
 function initCharCounters() {
@@ -1880,7 +1867,7 @@ function openProfileModal(user) {
     <button class="profile-option-btn" onclick="openPrivacySettings()"><span class="opt-icon">🛡️</span> Privacy & Safety</button>
     <button class="profile-option-btn" onclick="goToSettings()"><span class="opt-icon">⚙️</span> Settings</button>
     <button class="profile-option-btn" onclick="goToBookmarks()"><span class="opt-icon">🔖</span> Saved Posts</button>
-    <button class="profile-option-btn danger" onclick="logOut().then(()=>{ showToast('Signed out'); location.reload(); })"><span class="opt-icon">🚪</span> Log Out</button>` : "";
+    <button class="profile-option-btn danger" onclick="logOut()"><span class="opt-icon">🚪</span> Log Out</button>` : "";
  
   document.getElementById("profileModal").classList.add("open");
 }
@@ -2310,11 +2297,12 @@ async function handleGoogleLogin() {
   const { error } = await db.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      // Redirect back to the app's origin (no hash/query params).
-      // Supabase will append the auth code automatically.
       redirectTo: window.location.origin + window.location.pathname
     }
   });
  
   if (error) showToast('Google sign-in failed: ' + error.message);
 }
+
+
+
